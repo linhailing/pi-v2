@@ -1,0 +1,199 @@
+# Pi 个人配置仓库（`~/.pi`）
+
+> Henry 的 Pi 编码代理个人配置，用 Git 管理，可跨机器同步。
+>
+> **核心原则**：全局（用户级）配置放本仓库；**项目级配置（密钥、baseUrl、测试地址、环境变量）放各自项目内，一律不进本仓库**。
+
+---
+
+## 目录结构
+
+```
+~/.pi/
+├── README.md                 # 本文件
+├── .gitignore                # 忽略本地状态、密钥、缓存
+├── .pi/agent/                # 长记忆数据（long-term-memory.json）
+└── agent/
+    ├── settings.json         # 默认模型 / 包清单 / 主题（全局）
+    ├── mcp.json              # MCP 服务声明（全局）
+    ├── APPEND_SYSTEM.md      # 追加到系统提示的执行规则（全局）
+    ├── auth.json             # Pi 认证凭证（本地，不入库）
+    ├── models-store.json     # 模型定义（deepseek，含 baseUrl，不含 key）
+    ├── chrome-connector.json # Chrome 连接器配置（全局）
+    ├── polyglot-lsp.json     # 多语言 LSP 配置（全局）
+    ├── extensions/           # 本地扩展
+    ├── agents/               # 自定义子代理
+    ├── skills/               # 技能（含 pi-super-curl 的软链）
+    ├── git/…/agent-kit/      # vaayne/agent-kit（技能集合 + 配置同步）
+    ├── npm/node_modules/     # npm 安装的包
+    ├── install/              # Pi 运行时（本地，不入库）
+    └── sessions/             # 会话记录（本地，不入库）
+```
+
+---
+
+## 已安装插件清单
+
+### 1. 包（`agent/settings.json` → `packages`）
+
+| 包 | 作用 | 配置位置 |
+| --- | --- | --- |
+| `npm:pi-polyglot-lsp` | 多语言 LSP | `agent/polyglot-lsp.json`（全局） |
+| `npm:@tintinweb/pi-subagents` | 子代理框架（Agent 工具 / @提及） | 无需额外配置 |
+| `npm:pi-super-curl` | 提供 `send-request` 技能 | **项目级**：`.pi-super-curl/config.json` + `.env` |
+| `npm:pi-chrome-connector` | `chrome_*` 浏览器工具 + 技能 | `agent/chrome-connector.json`（全局） |
+| `npm:awesome-pi-themes` | 主题库 | `settings.json` → `theme`（当前 `princess-nam-rom`） |
+| `npm:pi-footer` | 状态栏 | `agent/extensions/pi-footer.json` |
+| `npm:@vtstech/pi-long-term-memory` | 长记忆 | `.pi/agent/long-term-memory.json` |
+| `git:github.com/vaayne/agent-kit` | 技能集合 + 配置同步 | `agent/git/…/agent-kit/` |
+
+### 2. 本地扩展（`agent/extensions/`）
+
+| 文件 | 作用 |
+| --- | --- |
+| `confirm-submit.ts` | 交互式提交前二次确认 |
+| `run-event.ts` | 任务完成时通知 |
+| `stop.ts` | 提供 `/stop` 立即停止并恢复任务 |
+| `pi-footer.json` | 状态栏样式（来自 pi-footer 包） |
+
+### 3. 技能（Skills）
+
+**内置/本地（`agent/skills/`）**：
+canvas-design · doc-coauthoring · docx · frontend-design · find-skills · pdf · pptx · skill-creator · uniapp · webapp-testing · xlsx · send-request（软链到 pi-super-curl）
+
+**agent-kit（`agent/git/…/agent-kit/skills/`）**：
+ambition · cmail · humanizer · lark-cli · project-setup · python-script · refine-code · scout · tap
+
+**chrome-connector（`agent/npm/…/pi-chrome-connector/skills/`）**：浏览器自动化。
+
+### 4. 自定义子代理（`agent/agents/`）
+
+| 文件 | 用途 | 依赖 |
+| --- | --- | --- |
+| `api-tester.md` | 轻量接口测试 | send-request（项目级配置） |
+| `go-backend.md` | Go 后端接口开发 | gopls |
+| `vue-frontend.md` | Vue 2/3、uniapp 前端开发 | pi-chrome-connector |
+
+### 5. MCP 服务（`agent/mcp.json`）
+
+| 名称 | 地址/命令 | 说明 |
+| --- | --- | --- |
+| `parallel-search` | `https://search.parallel.ai/mcp` | 联网搜索，直接工具，无需密钥 |
+| `context7` | `npx -y @upstash/context7-mcp` | 拉取最新库文档，无需密钥 |
+
+---
+
+## 项目级配置（重点）
+
+> 以下插件需要**在每个具体项目里单独配置**，不要写进本仓库。
+
+### send-request / api-tester（pi-super-curl）
+
+在**项目根目录**创建 `.pi-super-curl/config.json`（脚本会从当前目录向上查找），并用 `envFile` 指向 `.env`：
+
+```json
+{
+  "baseUrl": "$API_BASE_URL",
+  "envFile": ".env",
+  "auth": {
+    "type": "jwt",
+    "secret": "$JWT_SECRET",
+    "algorithm": "HS256",
+    "expiresIn": 3600,
+    "payload": { "user_id": "{{env.USER_ID}}" }
+  },
+  "headers": { "Content-Type": "application/json" },
+  "endpoints": [
+    { "name": "health", "url": "/health", "method": "GET" },
+    { "name": "chat",   "url": "/api/chat", "method": "POST" }
+  ]
+}
+```
+
+`.env` 示例（项目内，勿提交真实密钥）：
+
+```text
+API_BASE_URL=https://your-api.example.com
+JWT_SECRET=xxxxx
+USER_ID=1
+```
+
+### cmail（域名邮箱）
+
+通过环境变量提供（`.env` 或 secret manager，勿写进命令/聊天）：
+
+```text
+CMAIL_HOST=https://mail.example.com
+CMAIL_EMAIL=admin@example.com
+CMAIL_PASSWORD=xxxxx
+# 可选
+CMAIL_USER_AGENT=curl/8.0.0
+CMAIL_ALLOW_INSECURE_HTTP=1   # 仅远程 HTTP 明确允许时
+```
+
+### lark-cli（飞书）
+
+- 首次使用在每台机器执行 `lark-cli auth login`（凭证存本地，不入库）。
+- 每次调用显式传 `--as user` 或 `--as bot`，身份不跨命令保留。
+- `high-risk-write` 类命令需 `--yes` 且经用户确认。
+
+### tap（公网搜索/抓取）
+
+需要 Bun；渲染与站点脚本需 Lightpanda。搜索 provider 按需配置 API key（可选，未配置则用免 key 的 Exa 匿名端点）：
+
+```text
+FIRECRAWL_API_KEY / FIRECRAWL_API_URL
+PARALLEL_API_KEY
+TAVILY_API_KEY
+EXA_API_KEY
+JINA_API_KEY
+SEARXNG_URL
+BRAVE_SEARCH_API_KEY
+KEENABLE_API_KEY
+```
+
+### webapp-testing / chrome-connector
+
+- **webapp-testing**：被测服务地址与启动命令随项目而定，例如前端 `http://localhost:5173`（Vite）、后端 `http://localhost:3000`；需 Playwright。
+- **chrome-connector**：工具全局可用（连接用户真实 Chrome），被测页面 URL 属于项目级；全局配置在 `agent/chrome-connector.json`。
+
+### uniapp / go-backend / vue-frontend
+
+- **uniapp**：`manifest.json`、`pages.json` 的各平台配置随项目而定。
+- **go-backend / vue-frontend / api-tester**：针对具体项目代码工作，无需全局配置。
+
+### polyglot-lsp（PHP）
+
+`agent/polyglot-lsp.json` 已声明 PHP → intelephense，但需在机器上安装：`npm i -g intelephense`。
+
+---
+
+## 测试地址速查
+
+| 用途 | 地址 |
+| --- | --- |
+| send-request 通用测试 | `https://httpbin.org/get` · `https://httpbin.org/anything` · `https://httpbin.org/post` |
+| DeepSeek API | `https://api.deepseek.com` |
+| Parallel Search MCP | `https://search.parallel.ai/mcp` |
+| 前端 dev（webapp-testing / chrome） | `http://localhost:5173`（Vite 默认） |
+| 后端 dev | `http://localhost:3000` |
+| 各业务 API / 飞书 / 云邮箱 | 各自项目 `.env` 中的域名 |
+
+---
+
+## 全局配置说明
+
+- **`settings.json`**：默认 provider/model（deepseek / deepseek-v4-pro）、packages 清单、theme。
+- **`mcp.json`**：parallel-search + context7，均无需密钥。
+- **`APPEND_SYSTEM.md`**：追加的执行规则（中文、最小变更、数据库只读等）。
+- **`models-store.json`**：deepseek 模型定义（baseUrl、成本、上下文窗口），不含 API key。
+- **`auth.json` / `mcp-auth.json`**：凭证，本地文件，已 gitignore。
+
+---
+
+## 同步与注意事项
+
+- 本仓库用 Git 管理：`git pull --ff-only` 拉取配置，改完 `git commit && git push`。
+- 已忽略（`.gitignore`）：`.idea`、`.env*`、`agent/install`、`agent/sessions`、`agent/auth.json`、`agent/bin`。
+- 换机器恢复：克隆本仓库到 `~/.pi`，执行 `pi install`（按 `settings.json` 的 packages 安装），再逐项补上项目级/机器级配置（send-request 的 config、cmail 环境变量、lark-cli 登录、intelephense 等）。
+- agent-kit 自带 `mise run sync` 可将 `config/pi/` 下的公共配置同步到 `~/.pi/agent`（仅管理 `defaultProjectTrust` 与 `packages`，其余本地设置保留）。

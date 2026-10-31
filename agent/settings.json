@@ -1,5 +1,14 @@
 {
   "lastChangelogVersion": "1.4.0",
   "defaultProvider": "deepseek",
-  "defaultModel": "deepseek-v4-pro"
+  "defaultModel": "deepseek-v4-pro",
+  "packages": [
+    "npm:pi-polyglot-lsp",
+    "npm:@tintinweb/pi-subagents",
+    "npm:pi-super-curl",
+    "npm:pi-chrome-connector",
+    "npm:awesome-pi-themes",
+    "npm:pi-footer"
+  ],
+  "theme": "princess-nam-rom"
 }

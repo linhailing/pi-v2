@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "enabled": true,
+  "preset": "powerline-bright",
+  "separator": "none",
+  "separatorFg": "default",
+  "separatorBg": "default",
+  "iconMode": "emoji",
+  "minimalist": false,
+  "terminal": {
+    "widthMode": "full",
+    "colorLevel": "ansi256"
+  },
+  "lines": [
+    [
+      { "type": "separator", "enabled": true, "options": { "separator": "powerline-start", "fg": "ansi256:136", "bg": "default" } },
+      { "type": "context-bar", "enabled": true, "options": { "fg": "ansi256:234", "bg": "ansi256:136", "contextBarMode": "medium", "icon": "📊 " } },
+      { "type": "separator", "enabled": true, "options": { "separator": "powerline-right-spaced", "fg": "ansi256:136", "bg": "ansi256:30" } },
+      { "type": "git-branch", "enabled": true, "options": { "fg": "brightWhite", "bg": "ansi256:30", "hideWhenEmpty": true, "icon": "🌿 " } },
+      { "type": "separator", "enabled": true, "options": { "separator": "powerline-right-spaced", "fg": "ansi256:30", "bg": "ansi256:108" } },
+      { "type": "git-diff", "enabled": true, "options": { "fg": "black", "bg": "ansi256:108", "raw": true, "gitDiffMode": "compact", "hideWhenEmpty": true } },
+      { "type": "separator", "enabled": true, "options": { "separator": "powerline-right-spaced", "fg": "ansi256:108", "bg": "ansi256:24" } },
+      { "type": "cwd", "enabled": true, "options": { "fg": "brightWhite", "bg": "ansi256:24", "segments": 3, "icon": "📁 " } },
+      { "type": "separator", "enabled": true, "options": { "separator": "powerline-right-spaced", "fg": "ansi256:24", "bg": "ansi256:37" } },
+      { "type": "tokens", "enabled": true, "options": { "fg": "black", "bg": "ansi256:37", "icon": "⚡ " } },
+      { "type": "separator", "enabled": true, "options": { "separator": "powerline-right-spaced", "fg": "ansi256:37", "bg": "ansi256:236" } },
+      { "type": "total-time", "enabled": true, "options": { "fg": "brightWhite", "bg": "ansi256:236", "icon": "⏱ " } },
+      { "type": "flex-separator", "enabled": true, "options": {} },
+      { "type": "model", "enabled": true, "options": { "fg": "brightWhite", "bg": "ansi256:61", "bold": true, "icon": "🤖 " } },
+      { "type": "separator", "enabled": true, "options": { "separator": "powerline-right-spaced", "fg": "ansi256:61", "bg": "ansi256:99" } },
+      { "type": "thinking-level", "enabled": true, "options": { "fg": "brightWhite", "bg": "ansi256:99", "hideWhenEmpty": true, "icon": "🧠 " } },
+      { "type": "separator", "enabled": true, "options": { "separator": "powerline-right-spaced", "fg": "ansi256:99", "bg": "ansi256:220" } },
+      { "type": "cost", "enabled": true, "options": { "fg": "black", "bg": "ansi256:220", "icon": "💰 " } },
+      { "type": "separator", "enabled": true, "options": { "separator": "powerline-end", "fg": "ansi256:220", "bg": "default" } }
+    ]
+  ]
+}

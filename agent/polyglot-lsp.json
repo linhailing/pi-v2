@@ -1,0 +1,10 @@
+{
+  "languages": {
+    "php": {
+      "command": "intelephense",
+      "args": ["--stdio"],
+      "extensions": [".php"],
+      "installHint": "npm i -g intelephense"
+    }
+  }
+}

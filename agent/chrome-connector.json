@@ -1,0 +1,7 @@
+{
+  "defaultTimeout": 15000,
+  "screenshot": {
+    "format": "png",
+    "fullPage": false
+  }
+}

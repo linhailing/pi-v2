@@ -2,12 +2,30 @@
   "mcpServers": {
     "parallel-search": {
       "url": "https://search.parallel.ai/mcp",
-      "directTools": true
+      "exposure": "direct"
     },
     "context7": {
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp"],
-      "directTools": false
+      "exposure": "codemode"
+    },
+    "dbx": {
+      "command": "npx",
+      "args": ["-y", "@dbx-app/mcp-server"]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"],
+      "exposure": "codemode"
+    },
+    "postgres": {
+      "enabled": false,
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://user:password@localhost:5432/your_database"
+      ]
     }
   }
 }

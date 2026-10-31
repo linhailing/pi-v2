@@ -8,7 +8,9 @@
     "npm:pi-super-curl",
     "npm:pi-chrome-connector",
     "npm:awesome-pi-themes",
-    "npm:pi-footer"
+    "npm:pi-footer",
+    "npm:@vtstech/pi-long-term-memory",
+    "git:github.com/vaayne/agent-kit"
   ],
   "theme": "princess-nam-rom"
 }

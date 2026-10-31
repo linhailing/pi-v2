@@ -10,7 +10,8 @@
     "npm:awesome-pi-themes",
     "npm:pi-footer",
     "npm:@vtstech/pi-long-term-memory",
-    "git:github.com/vaayne/agent-kit"
+    "git:github.com/vaayne/agent-kit",
+    "npm:billion-context"
   ],
   "theme": "princess-nam-rom"
 }

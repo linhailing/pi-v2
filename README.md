@@ -16,6 +16,7 @@
 └── agent/
     ├── settings.json         # 默认模型 / 包清单 / 主题（全局）
     ├── mcp.json              # MCP 服务声明（全局）
+    ├── billion-context.json  # billion-context 配置（软链到 ~/.config/billion-context/）
     ├── APPEND_SYSTEM.md      # 追加到系统提示的执行规则（全局）
     ├── auth.json             # Pi 认证凭证（本地，不入库）
     ├── models-store.json     # 模型定义（deepseek，含 baseUrl，不含 key）
@@ -46,6 +47,7 @@
 | `npm:pi-footer` | 状态栏 | `agent/extensions/pi-footer.json` |
 | `npm:@vtstech/pi-long-term-memory` | 长记忆 | `.pi/agent/long-term-memory.json` |
 | `git:github.com/vaayne/agent-kit` | 技能集合 + 配置同步 | `agent/git/…/agent-kit/` |
+| `npm:billion-context` | 会话内上下文压缩（native/proxy，子代理已关） | `agent/billion-context.json`（软链到 `~/.config/billion-context/`） |
 
 ### 2. 本地扩展（`agent/extensions/`）
 
@@ -181,6 +183,60 @@ KEENABLE_API_KEY
 
 ---
 
+## billion-context（上下文压缩）与三者关系
+
+`npm:billion-context`（native/proxy 方案）负责**会话内上下文压缩**，与另外两个插件各司其职、零冲突：
+
+| 插件 | 职责 | 关键配置 |
+| --- | --- | --- |
+| billion-context | 会话内压缩（`compress`/`decompress`/`search_context`/`acp_status`） | `agent/billion-context.json` → `"pi": { "subagents": false }` |
+| pi-subagents | 子代理编排（`Agent`/`SubagentWorkflow`/FleetView/@提及） | 无需额外配置 |
+| agent-kit | 技能（ambition/lark-cli/cmail/scout/tap…） | 直接用，**不跑 sync:config** |
+
+### 关键配置：关闭内置子代理
+
+billion-context 的 native 模式**默认自带子代理**（`acp_delegate`/`acp_delegate_wait`/`acp_delegate_cancel`），与 pi-subagents 冲突。已通过以下配置关闭（保留压缩）：
+
+```jsonc
+// 本仓库 ~/.pi/agent/billion-context.json（软链到 ~/.config/billion-context/billion-context.json）
+{ "pi": { "subagents": false } }
+```
+
+改配置后需**重启 pi 并开新会话**生效。验证：新会话工具列表只有 `Agent`/`SubagentWorkflow`（pi-subagents），无 `acp_delegate`；`/acp` 显示压缩状态。
+
+### 跨系统同步（macOS / Windows）
+
+配置文件放在本仓库 `agent/billion-context.json`，通过软链接接入 billion-context 的默认读取路径——两系统同为 `~/.config/billion-context/billion-context.json`（源码用 `homedir() + ".config"`，跨平台一致）。新机器克隆仓库后建一次软链即可：
+
+```bash
+# macOS / Linux
+mkdir -p ~/.config/billion-context
+ln -sf ~/.pi/agent/billion-context.json ~/.config/billion-context/billion-context.json
+```
+
+```powershell
+# Windows（PowerShell，需开发者模式；或 cmd 的 mklink）
+New-Item -ItemType SymbolicLink -Force `
+  -Path "$env:USERPROFILE\.config\billion-context\billion-context.json" `
+  -Target "$env:USERPROFILE\.pi\agent\billion-context.json"
+```
+
+> Windows 无法建符号链接时（无管理员权限 / 未开开发者模式），改用环境变量指向仓库文件：
+> `setx BILI_CONFIG_FILE "%USERPROFILE%\.pi\agent\billion-context.json"`（macOS 亦可 `export BILI_CONFIG_FILE=~/.pi/agent/billion-context.json` 写入 shell rc）。
+
+### 两种方案的区别（易混淆）
+
+| | `billion-context`（已装） | `billion-context-pi`（未装） |
+| --- | --- | --- |
+| 形态 | proxy/native：自启动本地 proxy 转发模型流量 | 进程内扩展：拦截 `context` 事件 |
+| 安装 | `pi install npm:billion-context`（或 `bili pi` 启动） | `pi install npm:billion-context-pi` |
+| 子代理开关 | `agent/billion-context.json`（软链） → `"pi": { "subagents": false }` | `~/.pi/acp.json` → `{ "delegate": false }` |
+| 互斥 | 两者**互斥**，同时装会双重压缩 | 同上 |
+
+> 若 `/acp` 报 `bili: no proxy detected`，说明 native 模式未接管成功，改用 `bili pi` 启动或 `bili plugin install pi`。
+
+---
+
 ## 全局配置说明
 
 - **`settings.json`**：默认 provider/model（deepseek / deepseek-v4-pro）、packages 清单、theme。
@@ -196,4 +252,4 @@ KEENABLE_API_KEY
 - 本仓库用 Git 管理：`git pull --ff-only` 拉取配置，改完 `git commit && git push`。
 - 已忽略（`.gitignore`）：`.idea`、`.env*`、`agent/install`、`agent/sessions`、`agent/auth.json`、`agent/bin`。
 - 换机器恢复：克隆本仓库到 `~/.pi`，执行 `pi install`（按 `settings.json` 的 packages 安装），再逐项补上项目级/机器级配置（send-request 的 config、cmail 环境变量、lark-cli 登录、intelephense 等）。
-- agent-kit 自带 `mise run sync` 可将 `config/pi/` 下的公共配置同步到 `~/.pi/agent`（仅管理 `defaultProjectTrust` 与 `packages`，其余本地设置保留）。
+- ⚠️ **不要对 pi 运行 agent-kit 的 `mise run sync:config`**：它会用 agent-kit 的 4 个包（含 `pi-vcc` 压缩插件）**整体替换**本仓库 packages 里的 9 个包，billion-context 与 pi-subagents 会被移除，且 pi-vcc 与 billion-context 硬冲突。agent-kit 的技能（ambition/lark-cli/cmail/scout…）由 Pi 直接从 `agent/git/…/agent-kit/skills/` 加载，**不需要 sync**。

@@ -16,7 +16,7 @@
 └── agent/
     ├── settings.json         # 默认模型 / 包清单 / 主题（全局）
     ├── mcp.json              # MCP 服务声明（全局）
-    ├── billion-context.json  # billion-context 配置（软链到 ~/.config/billion-context/）
+    ├── billion-context.json  # billion-context 配置（源文件；由 ~/.config/billion-context/billion-context.json 软链指向）
     ├── APPEND_SYSTEM.md      # 追加到系统提示的执行规则（全局）
     ├── auth.json             # Pi 认证凭证（本地，不入库）
     ├── models-store.json     # 模型定义（deepseek，含 baseUrl，不含 key）
@@ -47,7 +47,7 @@
 | `npm:pi-footer` | 状态栏 | `agent/extensions/pi-footer.json` |
 | `npm:@vtstech/pi-long-term-memory` | 长记忆 | `.pi/agent/long-term-memory.json` |
 | `git:github.com/vaayne/agent-kit` | 技能集合 + 配置同步 | `agent/git/…/agent-kit/` |
-| `npm:billion-context` | 会话内上下文压缩（native/proxy，子代理已关） | `agent/billion-context.json`（软链到 `~/.config/billion-context/`） |
+| `npm:billion-context` | 会话内上下文压缩（native/proxy，子代理已关） | `agent/billion-context.json`（源文件；`~/.config/billion-context/billion-context.json` 软链指向它） |
 
 ### 2. 本地扩展（`agent/extensions/`）
 
@@ -198,7 +198,7 @@ KEENABLE_API_KEY
 billion-context 的 native 模式**默认自带子代理**（`acp_delegate`/`acp_delegate_wait`/`acp_delegate_cancel`），与 pi-subagents 冲突。已通过以下配置关闭（保留压缩）：
 
 ```jsonc
-// 本仓库 ~/.pi/agent/billion-context.json（软链到 ~/.config/billion-context/billion-context.json）
+// 源文件 ~/.pi/agent/billion-context.json；软链在 ~/.config/billion-context/billion-context.json → 指向它
 { "pi": { "subagents": false } }
 ```
 
@@ -230,7 +230,7 @@ New-Item -ItemType SymbolicLink -Force `
 | --- | --- | --- |
 | 形态 | proxy/native：自启动本地 proxy 转发模型流量 | 进程内扩展：拦截 `context` 事件 |
 | 安装 | `pi install npm:billion-context`（或 `bili pi` 启动） | `pi install npm:billion-context-pi` |
-| 子代理开关 | `agent/billion-context.json`（软链） → `"pi": { "subagents": false }` | `~/.pi/acp.json` → `{ "delegate": false }` |
+| 子代理开关 | `agent/billion-context.json`（源文件） → `"pi": { "subagents": false }` | `~/.pi/acp.json` → `{ "delegate": false }` |
 | 互斥 | 两者**互斥**，同时装会双重压缩 | 同上 |
 
 > 若 `/acp` 报 `bili: no proxy detected`，说明 native 模式未接管成功，改用 `bili pi` 启动或 `bili plugin install pi`。

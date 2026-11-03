@@ -20,7 +20,7 @@
       { "type": "separator", "enabled": true, "options": { "separator": "powerline-right-spaced", "fg": "ansi256:30", "bg": "ansi256:108" } },
       { "type": "git-diff", "enabled": true, "options": { "fg": "black", "bg": "ansi256:108", "raw": true, "gitDiffMode": "compact", "hideWhenEmpty": true } },
       { "type": "separator", "enabled": true, "options": { "separator": "powerline-right-spaced", "fg": "ansi256:108", "bg": "ansi256:24" } },
-      { "type": "cwd", "enabled": true, "options": { "fg": "brightWhite", "bg": "ansi256:24", "segments": 3, "icon": "📁 " } },
+      { "type": "cwd", "enabled": false, "options": { "fg": "brightWhite", "bg": "ansi256:24", "segments": 3, "icon": "📁 " } },
       { "type": "separator", "enabled": true, "options": { "separator": "powerline-right-spaced", "fg": "ansi256:24", "bg": "ansi256:37" } },
       { "type": "tokens", "enabled": true, "options": { "fg": "black", "bg": "ansi256:37", "icon": "⚡ " } },
       { "type": "separator", "enabled": true, "options": { "separator": "powerline-right-spaced", "fg": "ansi256:37", "bg": "ansi256:236" } },

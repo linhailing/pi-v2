@@ -61,7 +61,7 @@
 ### 3. 技能（Skills）
 
 **内置/本地（`agent/skills/`）**：
-canvas-design · doc-coauthoring · docx · frontend-design · find-skills · pdf · pptx · skill-creator · uniapp · webapp-testing · xlsx · send-request（软链到 pi-super-curl）
+canvas-design · doc-coauthoring · docx · frontend-design · find-skills · fix-bug · pdf · pptx · skill-creator · uniapp · webapp-testing · xlsx · send-request（软链到 pi-super-curl）
 
 **agent-kit（`agent/git/…/agent-kit/skills/`）**：
 ambition · cmail · humanizer · lark-cli · project-setup · python-script · refine-code · scout · tap
